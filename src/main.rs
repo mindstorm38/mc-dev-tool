@@ -1,46 +1,105 @@
-
-use std::collections::HashMap;
-
-use serde_json::Value;
-
-use isahc::prelude::*;
-use isahc::ResponseExt;
-
-const MC_VERSION_MANIFEST: &str = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+use mcdev::mcapi;
+use std::io::{stdin, stdout, Write};
+use ansi_term::Colour::{Yellow, Red, Cyan};
+use mcdev::mcapi::{MinecraftVersions, MinecraftVersion, MinecraftVersionType};
 
 fn main() {
 
-    let versions = request_versions();
-    dbg!(versions);
+    #[cfg(windows)]
+    ansi_term::enable_ansi_support().unwrap();
 
-}
+    println!();
+    println!("  {0} {1} {0} ", Yellow.paint("####"), Yellow.bold().paint("Minecraft Dev Tool"));
+    println!();
 
-fn request_versions() -> Option<HashMap<String, String>> {
+    let mut input = String::new();
+    let mut running = true;
 
-    let manifest: Value = isahc::get(MC_VERSION_MANIFEST)
-        .unwrap()
-        .json()
-        .unwrap();
+    let mut versions: Option<MinecraftVersions> = None;
 
-    let versions = &manifest["versions"];
-    let mut ret: HashMap<String, String> = HashMap::new();
+    while running {
 
-    if let Value::Array(versions) = versions {
-        for version in versions {
+        print!("{} ", Yellow.paint(">"));
+        stdout().flush().unwrap();
 
-            if let Value::Object(version) = version {
+        input.clear();
 
-                if let Some(Value::String(id)) = version.get("id") {
-                    if let Some(Value::String(url)) = version.get("url") {
-                        ret.insert(String::clone(id), String::clone(url));
-                    }
+        if let Ok(_) = stdin().read_line(&mut input) {
+
+            let args = input.trim().split_whitespace().collect::<Vec<&str>>();
+
+            if args.len() == 0 {
+                println!("{}", Red.paint("Not a command !"));
+            } else {
+                match args[0] {
+                    "help" => print_help(),
+                    "versions" => print_versions(&args, &mut versions),
+                    _ => println!("{}", Red.paint("Invalid command !"))
                 }
-
             }
 
         }
+
     }
 
-    Some(ret)
+    //let versions = mcapi::request_versions();
 
+    //dbg!(versions);
+
+}
+
+fn print_help() {
+
+    println!("{}", Cyan.paint("versions [<type>] [latest]"));
+    println!("{}", Cyan.paint("version <version>"));
+
+}
+
+fn print_versions(args: &Vec<&str>, versions: &mut Option<MinecraftVersions>) {
+
+    if versions.is_none() {
+        *versions = mcapi::request_versions();
+    }
+
+    if let Some(versions) = versions {
+
+        let mut filter_type: Option<MinecraftVersionType> = None;
+        let mut filter_latest = false;
+
+        for i in 1..2 {
+            if args.len() > i {
+                if let Some(typ) = MinecraftVersionType::from_name(&String::from(args[i])) {
+                    filter_type = Some(typ);
+                } else if args[i] == "latest" {
+                    filter_latest = true;
+                } else {
+                    println!("{} {} {}", Red.paint("Invalid keyword"), Yellow.paint(args[i]), Red.paint(" !"))
+                }
+            }
+        }
+
+        for vid in versions.get_versions() {
+            if let Some(version) = versions.get_version(vid) {
+
+                if let Some(typ) = &filter_type {
+                    if version.typ != *typ {
+                        continue;
+                    }
+                }
+
+                if filter_latest && !versions.is_latest(&version) {
+                    continue;
+                }
+
+                print_version(&version);
+
+            }
+        }
+
+    }
+
+}
+
+fn print_version(version: &MinecraftVersion) {
+    println!("{} {}", Cyan.paint(*version.id))
 }
