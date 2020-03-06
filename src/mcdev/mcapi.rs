@@ -52,6 +52,8 @@ pub fn request_versions() -> Option<MinecraftVersions> {
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum MinecraftVersionType { Release, Snapshot, OldAlpha }
 
+
+
 #[derive(Debug)]
 pub struct MinecraftVersion {
     pub id: String,

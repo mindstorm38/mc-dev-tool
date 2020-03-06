@@ -101,5 +101,5 @@ fn print_versions(args: &Vec<&str>, versions: &mut Option<MinecraftVersions>) {
 }
 
 fn print_version(version: &MinecraftVersion) {
-    println!("{} {}", Cyan.paint(*version.id))
+    println!("{} [{}]", Cyan.paint(*version.id), Yellow.paint(*version.typ))
 }
