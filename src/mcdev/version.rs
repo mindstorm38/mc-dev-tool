@@ -2,9 +2,7 @@ use isahc::prelude::*;
 use serde_json::Value;
 use std::collections::HashMap;
 
-
 const MC_VERSION_MANIFEST: &str = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-
 
 pub fn request_versions() -> Option<MinecraftVersions> {
 
@@ -49,10 +47,8 @@ pub fn request_versions() -> Option<MinecraftVersions> {
 
 }
 
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub enum MinecraftVersionType { Release, Snapshot, OldAlpha }
-
-
 
 #[derive(Debug)]
 pub struct MinecraftVersion {
@@ -81,6 +77,16 @@ impl MinecraftVersionType {
 
     }
 
+}
+
+impl ToString for MinecraftVersionType {
+    fn to_string(&self) -> String {
+        match self {
+            MinecraftVersionType::Release => "Release",
+            MinecraftVersionType::Snapshot => "Snapshot",
+            MinecraftVersionType::OldAlpha => "Old Alpha"
+        }.into()
+    }
 }
 
 impl MinecraftVersions {

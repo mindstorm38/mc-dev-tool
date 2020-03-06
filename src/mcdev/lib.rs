@@ -1,2 +1,2 @@
-
-pub mod mcapi;
+pub mod version;
+pub mod meta;
