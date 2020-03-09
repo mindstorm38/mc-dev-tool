@@ -3,8 +3,13 @@ use mcdev::meta::{self, MinecraftMeta, MinecraftDownload};
 use ansi_term::Colour::{Yellow, Red, Cyan};
 use std::io::{stdin, stdout, Write};
 use std::cmp::max;
+use std::rc::Rc;
 
 mod utils;
+mod command;
+
+use command::CommandManager;
+use command::help::HelpCommand;
 
 fn main() {
 
@@ -18,6 +23,10 @@ fn main() {
     let mut input = String::new();
     let mut running = true;
 
+    let mut command_manager = CommandManager::new();
+
+    command_manager.add_command(Box::new(HelpCommand::new()));
+
     let mut versions: Option<MinecraftVersions> = None;
     let mut version_meta: Option<MinecraftMeta> = None;
 
@@ -30,6 +39,9 @@ fn main() {
 
         if let Ok(_) = stdin().read_line(&mut input) {
 
+            command_manager.execute(input.trim());
+
+            /*
             let args = input.trim().split_whitespace().collect::<Vec<&str>>();
 
             if args.len() != 0 {
@@ -49,7 +61,7 @@ fn main() {
 
                 }
 
-            }
+            }*/
 
         }
 

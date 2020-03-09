@@ -11,6 +11,10 @@ serde_json = "1.0"
 isahc = { version = "0.8.2", features = ["json"] }
 ansi_term = "0.12"
 
+[[bin]]
+name = "mc-mapping-helper"
+path = "src/app/main.rs"
+
 [lib]
 name = "mcdev"
 path = "src/mcdev/lib.rs"
